@@ -18,11 +18,17 @@ export default function Chart({ data }: { data: Point[] }) {
             <stop offset="100%" stopColor="#fb7185" stopOpacity={0} />
           </linearGradient>
         </defs>
-        <XAxis dataKey="label" stroke="#475569" fontSize={11} tickLine={false} axisLine={false} />
-        <YAxis stroke="#475569" fontSize={11} tickLine={false} axisLine={false} allowDecimals={false} />
+        <XAxis dataKey="label" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
+        <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} allowDecimals={false} />
         <Tooltip
-          contentStyle={{ background: "#0f172a", border: "1px solid #1e293b", borderRadius: 10, fontSize: 12 }}
-          labelStyle={{ color: "#94a3b8" }}
+          contentStyle={{
+            background: "var(--card)",
+            border: "1px solid var(--border)",
+            borderRadius: 10,
+            fontSize: 12,
+            color: "var(--foreground)",
+          }}
+          labelStyle={{ color: "var(--muted)" }}
         />
         <Area type="monotone" dataKey="screened" stroke="#34d399" fill="url(#gScreened)" strokeWidth={2} name="Screened" />
         <Area type="monotone" dataKey="quarantined" stroke="#fb7185" fill="url(#gQuar)" strokeWidth={2} name="Quarantined" />

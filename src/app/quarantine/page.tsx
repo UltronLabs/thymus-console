@@ -25,16 +25,16 @@ export default async function Quarantine() {
       />
       <div className="p-8 space-y-8">
         {pending.length === 0 ? (
-          <p className="text-slate-400 text-sm">Nothing in the queue. Blocked poison shows up here for triage.</p>
+          <p className="text-muted text-sm">Nothing in the queue. Blocked poison shows up here for triage.</p>
         ) : (
           <ul className="space-y-3">
             {pending.map((r) => (
-              <li key={r.id} className="rounded-xl border border-rose-500/20 bg-rose-500/[0.03] p-5">
+              <li key={r.id} className="rounded-xl border border-rose-500/25 bg-rose-500/[0.04] p-5">
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0">
-                    <p className="text-sm text-slate-100">&ldquo;{r.text}&rdquo;</p>
-                    <p className="text-xs text-slate-500 mt-1">
-                      {r.agentId} · {r.channel} · origin <span className="text-slate-400">{r.originTrustTier}</span> · {timeAgo(r.createdAt)}
+                    <p className="text-sm text-foreground">&ldquo;{r.text}&rdquo;</p>
+                    <p className="text-xs text-muted mt-1">
+                      {r.agentId} · {r.channel} · origin <span className="text-foreground/80">{r.originTrustTier}</span> · {timeAgo(r.createdAt)}
                     </p>
                   </div>
                   <ReviewButtons id={r.id} />
@@ -42,7 +42,7 @@ export default async function Quarantine() {
                 <div className="mt-3 flex items-center gap-3">
                   <Flags flags={parseFlags(r.taintFlags)} />
                 </div>
-                {r.reason && <p className="text-xs text-slate-500 mt-2">{r.reason}</p>}
+                {r.reason && <p className="text-xs text-muted mt-2">{r.reason}</p>}
               </li>
             ))}
           </ul>
@@ -50,13 +50,13 @@ export default async function Quarantine() {
 
         {resolved.length > 0 && (
           <div>
-            <h2 className="text-sm font-medium text-slate-400 mb-3">Recently resolved</h2>
-            <ul className="divide-y divide-slate-800/70 rounded-xl border border-slate-800 bg-slate-900/40">
+            <h2 className="text-sm font-medium text-muted mb-3">Recently resolved</h2>
+            <ul className="divide-y divide-border rounded-xl border border-border bg-card">
               {resolved.map((r) => (
                 <li key={r.id} className="flex items-center gap-4 px-5 py-3">
-                  <span className="text-xs font-medium text-slate-300 w-24">{r.reviewStatus.replace("_", " ")}</span>
-                  <span className="flex-1 min-w-0 truncate text-sm text-slate-400">{r.text}</span>
-                  <span className="text-xs text-slate-600">{r.reviewedAt ? timeAgo(r.reviewedAt) : ""}</span>
+                  <span className="text-xs font-medium text-foreground/80 w-24 capitalize">{r.reviewStatus.replace("_", " ")}</span>
+                  <span className="flex-1 min-w-0 truncate text-sm text-muted">{r.text}</span>
+                  <span className="text-xs text-muted/70">{r.reviewedAt ? timeAgo(r.reviewedAt) : ""}</span>
                 </li>
               ))}
             </ul>

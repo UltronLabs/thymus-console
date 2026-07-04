@@ -1,21 +1,32 @@
-// Shared presentation helpers for verdicts, severity, and channels.
+// Shared presentation helpers. Verdict/severity colors are theme-aware
+// (light text tones for light mode, brighter for dark).
 
 export const VERDICT_STYLE: Record<string, { label: string; cls: string; dot: string }> = {
-  admit: { label: "Admit", cls: "text-emerald-300 bg-emerald-500/10 border-emerald-500/20", dot: "bg-emerald-400" },
-  tag: { label: "Tag", cls: "text-amber-300 bg-amber-500/10 border-amber-500/20", dot: "bg-amber-400" },
-  quarantine: { label: "Quarantine", cls: "text-rose-300 bg-rose-500/10 border-rose-500/20", dot: "bg-rose-400" },
-};
-
-export const SEVERITY_STYLE: Record<string, string> = {
-  none: "text-slate-400",
-  low: "text-sky-300",
-  medium: "text-amber-300",
-  high: "text-orange-300",
-  critical: "text-rose-300",
+  admit: {
+    label: "Admit",
+    cls: "text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 border-emerald-500/20",
+    dot: "bg-emerald-500 dark:bg-emerald-400",
+  },
+  tag: {
+    label: "Tag",
+    cls: "text-amber-700 dark:text-amber-300 bg-amber-500/10 border-amber-500/25",
+    dot: "bg-amber-500 dark:bg-amber-400",
+  },
+  quarantine: {
+    label: "Quarantine",
+    cls: "text-rose-700 dark:text-rose-300 bg-rose-500/10 border-rose-500/25",
+    dot: "bg-rose-500 dark:bg-rose-400",
+  },
 };
 
 export function verdictStyle(v: string) {
-  return VERDICT_STYLE[v] ?? { label: v, cls: "text-slate-300 bg-slate-500/10 border-slate-500/20", dot: "bg-slate-400" };
+  return (
+    VERDICT_STYLE[v] ?? {
+      label: v,
+      cls: "text-muted bg-mutedbg border-border",
+      dot: "bg-muted",
+    }
+  );
 }
 
 export function parseFlags(json: string): string[] {

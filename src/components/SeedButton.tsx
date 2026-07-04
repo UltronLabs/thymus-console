@@ -18,8 +18,8 @@ export default function SeedButton({ subtle }: { subtle?: boolean }) {
       }
       className={`inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors disabled:opacity-50 ${
         subtle
-          ? "border border-slate-700 text-slate-300 hover:bg-slate-800"
-          : "bg-emerald-500 text-slate-950 hover:bg-emerald-400"
+          ? "border border-border text-foreground/80 hover:bg-mutedbg"
+          : "bg-emerald-500 text-white hover:bg-emerald-400"
       }`}
     >
       <Database className="size-4" />

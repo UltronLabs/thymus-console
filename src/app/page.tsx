@@ -42,7 +42,7 @@ export default async function Dashboard() {
         <PageHeader title="Dashboard" subtitle="Trust & hygiene for AI agent memory" />
         <div className="grid place-items-center py-32 text-center">
           <div>
-            <p className="text-slate-400 mb-4">No decisions yet. Load a demo dataset to explore the console.</p>
+            <p className="text-muted mb-4">No decisions yet. Load a demo dataset to explore the console.</p>
             <SeedButton />
           </div>
         </div>
@@ -60,15 +60,15 @@ export default async function Dashboard() {
       <div className="p-8 space-y-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <StatCard label="Memory writes screened" value={total} />
-          <StatCard label="Poisoning attempts blocked" value={quarantined} accent="text-rose-300" />
-          <StatCard label="Tagged (stored, flagged)" value={tagged} accent="text-amber-300" />
-          <StatCard label="Admitted clean" value={admitted} accent="text-emerald-300" />
+          <StatCard label="Poisoning attempts blocked" value={quarantined} accent="text-rose-600 dark:text-rose-300" />
+          <StatCard label="Tagged (stored, flagged)" value={tagged} accent="text-amber-600 dark:text-amber-300" />
+          <StatCard label="Admitted clean" value={admitted} accent="text-emerald-600 dark:text-emerald-300" />
         </div>
 
-        <div className="rounded-xl border border-slate-800 bg-slate-900/40 p-5">
+        <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <h2 className="text-sm font-medium text-slate-300">Decisions over time</h2>
-            <div className="flex gap-4 text-xs text-slate-400">
+            <h2 className="text-sm font-medium text-foreground">Decisions over time</h2>
+            <div className="flex gap-4 text-xs text-muted">
               <span className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-emerald-400" />Screened</span>
               <span className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-rose-400" />Quarantined</span>
             </div>
@@ -76,22 +76,22 @@ export default async function Dashboard() {
           <Chart data={buildSeries(rows)} />
         </div>
 
-        <div className="rounded-xl border border-slate-800 bg-slate-900/40">
-          <div className="flex items-center justify-between px-5 py-3 border-b border-slate-800">
-            <h2 className="text-sm font-medium text-slate-300">Recent decisions</h2>
+        <div className="rounded-xl border border-border bg-card shadow-sm">
+          <div className="flex items-center justify-between px-5 py-3 border-b border-border">
+            <h2 className="text-sm font-medium text-foreground">Recent decisions</h2>
             {pending > 0 && (
-              <a href="/quarantine" className="text-xs text-rose-300 hover:underline">
+              <a href="/quarantine" className="text-xs text-rose-600 dark:text-rose-300 hover:underline">
                 {pending} awaiting review →
               </a>
             )}
           </div>
-          <ul className="divide-y divide-slate-800/70">
+          <ul className="divide-y divide-border">
             {rows.slice(0, 8).map((r) => (
               <li key={r.id} className="flex items-center gap-4 px-5 py-3">
                 <VerdictBadge verdict={r.verdict} />
-                <span className="flex-1 min-w-0 truncate text-sm text-slate-300">{r.text}</span>
-                <span className="text-xs text-slate-500 shrink-0">{r.channel}</span>
-                <span className="text-xs text-slate-600 shrink-0 w-16 text-right">{timeAgo(r.createdAt)}</span>
+                <span className="flex-1 min-w-0 truncate text-sm text-foreground/80">{r.text}</span>
+                <span className="text-xs text-muted shrink-0">{r.channel}</span>
+                <span className="text-xs text-muted/70 shrink-0 w-16 text-right">{timeAgo(r.createdAt)}</span>
               </li>
             ))}
           </ul>

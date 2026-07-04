@@ -16,9 +16,9 @@ export default async function Audit() {
     <>
       <PageHeader title="Audit log" subtitle="Every admit / tag / quarantine decision, newest first" />
       <div className="p-8">
-        <div className="rounded-xl border border-slate-800 overflow-hidden">
+        <div className="rounded-xl border border-border overflow-hidden bg-card shadow-sm">
           <table className="w-full text-sm">
-            <thead className="bg-slate-900/60 text-slate-400 text-xs">
+            <thead className="bg-mutedbg text-muted text-xs">
               <tr>
                 <th className="text-left font-medium px-4 py-2.5">Verdict</th>
                 <th className="text-left font-medium px-4 py-2.5">Memory</th>
@@ -28,18 +28,18 @@ export default async function Audit() {
                 <th className="text-right font-medium px-4 py-2.5">When</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/70">
+            <tbody className="divide-y divide-border">
               {rows.map((r) => (
-                <tr key={r.id} className="hover:bg-slate-900/40">
+                <tr key={r.id} className="hover:bg-mutedbg">
                   <td className="px-4 py-3 align-top"><VerdictBadge verdict={r.verdict} /></td>
                   <td className="px-4 py-3 align-top max-w-md">
-                    <div className="truncate text-slate-300">{r.text}</div>
-                    <div className="text-[11px] text-slate-600">{r.agentId} · {r.channel}</div>
+                    <div className="truncate text-foreground/80">{r.text}</div>
+                    <div className="text-[11px] text-muted/70">{r.agentId} · {r.channel}</div>
                   </td>
-                  <td className="px-4 py-3 align-top text-xs text-slate-400">{r.originTrustTier}</td>
+                  <td className="px-4 py-3 align-top text-xs text-muted">{r.originTrustTier}</td>
                   <td className="px-4 py-3 align-top"><Flags flags={parseFlags(r.taintFlags)} /></td>
-                  <td className="px-4 py-3 align-top text-xs text-slate-400 tabular-nums">{r.trustScore.toFixed(2)}</td>
-                  <td className="px-4 py-3 align-top text-right text-xs text-slate-600 whitespace-nowrap">{timeAgo(r.createdAt)}</td>
+                  <td className="px-4 py-3 align-top text-xs text-muted tabular-nums">{r.trustScore.toFixed(2)}</td>
+                  <td className="px-4 py-3 align-top text-right text-xs text-muted/70 whitespace-nowrap">{timeAgo(r.createdAt)}</td>
                 </tr>
               ))}
             </tbody>

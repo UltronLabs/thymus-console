@@ -1,17 +1,47 @@
 @import "tailwindcss";
 
+/* Class-based dark mode (toggled by next-themes on <html>). */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-  color-scheme: dark;
+  --background: #ffffff;
+  --card: #ffffff;
+  --muted-bg: #f8fafc;
+  --border: #e9edf2;
+  --foreground: #0f172a;
+  --muted: #64748b;
+  --sidebar: #fbfcfd;
+}
+
+.dark {
+  --background: #020617;
+  --card: #0b1220;
+  --muted-bg: #0d1526;
+  --border: #1e293b;
+  --foreground: #f1f5f9;
+  --muted: #94a3b8;
+  --sidebar: #070d1a;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-card: var(--card);
+  --color-mutedbg: var(--muted-bg);
+  --color-border: var(--border);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-sidebar: var(--sidebar);
+  --color-brand: #10b981;
 }
 
 html,
 body {
-  background: #020617;
-  color: #e2e8f0;
+  background: var(--background);
+  color: var(--foreground);
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #1e293b transparent;
+  scrollbar-color: var(--border) transparent;
 }
