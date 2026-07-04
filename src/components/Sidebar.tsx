@@ -43,7 +43,7 @@ export default function Sidebar() {
           <ShieldCheck className="size-5 text-white" />
         </div>
         <div>
-          <div className="font-semibold leading-tight">Thymus</div>
+          <div className="font-heading font-semibold leading-tight">Thymus</div>
           <div className="text-[11px] text-muted leading-tight">memory firewall</div>
         </div>
       </div>

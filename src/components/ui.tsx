@@ -15,7 +15,7 @@ export function PageHeader({ title, subtitle, action }: { title: string; subtitl
 export function StatCard({ label, value, accent }: { label: string; value: number | string; accent?: string }) {
   return (
     <div className="rounded-xl border border-border bg-card px-5 py-4 shadow-sm">
-      <div className={`text-3xl font-semibold ${accent ?? "text-foreground"}`}>{value}</div>
+      <div className={`font-heading text-3xl font-semibold ${accent ?? "text-foreground"}`}>{value}</div>
       <div className="mt-1 text-[13px] text-muted">{label}</div>
     </div>
   );

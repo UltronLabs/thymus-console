@@ -32,13 +32,26 @@
   --color-muted: var(--muted);
   --color-sidebar: var(--sidebar);
   --color-brand: #10b981;
+
+  /* Fonts, matching the mem0 dashboard. */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-fustat), var(--font-inter), sans-serif;
+  --font-mono: var(--font-dm-mono), ui-monospace, monospace;
 }
 
 html,
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: var(--font-sans);
+}
+
+/* Fustat for headings (like mem0). */
+h1,
+h2,
+h3,
+.font-heading {
+  font-family: var(--font-heading);
 }
 
 * {
