@@ -1,0 +1,45 @@
+// Thymus console — decision store.
+// One row per screened memory (the SDK's AuditSink record). Quarantined rows
+// (verdict = "quarantine") form the review queue via reviewStatus.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Decision {
+  id              String    @id @default(cuid())
+  tenantId        String    @default("default") // = the API key's tenant
+
+  agentId         String?
+  sessionId       String?
+  actorId         String?
+  channel         String // user_chat | tool_output | web | rag_doc | system | agent | unknown
+  originTrustTier String // trusted | standard | untrusted | hostile
+
+  text            String? // the memory text (may be omitted/redacted)
+  contentHash     String?
+
+  verdict         String // admit | tag | quarantine
+  trustScore      Float
+  severity        String // none | low | medium | high | critical
+  taintFlags      String  @default("[]") // JSON array of flag strings
+  reason          String?
+  decidingPolicy  String?
+
+  // Review lifecycle (only meaningful for quarantined rows).
+  reviewStatus    String    @default("none") // none | pending | released | deleted | marked_safe
+  reviewedAt      DateTime?
+  reviewer        String?
+  reviewNote      String?
+
+  createdAt       DateTime  @default(now())
+
+  @@index([tenantId, verdict])
+  @@index([tenantId, createdAt])
+  @@index([tenantId, reviewStatus])
+}
