@@ -4,6 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { getTenantId } from "@/lib/tenant";
 import { generateApiKey } from "@/lib/apikey";
+import type { DetectorName } from "@/lib/policy";
 import { revalidatePath } from "next/cache";
 
 export type ReviewOutcome = "released" | "deleted" | "marked_safe";
@@ -40,6 +41,18 @@ export async function revokeApiKey(id: string) {
   await prisma.apiKey.updateMany({
     where: { id, tenantId },
     data: { revokedAt: new Date() },
+  });
+  revalidatePath("/settings");
+}
+
+// Saves per-tenant policy tuning. The SDK fetches this via GET /api/policy
+// (thymus.remote.fetch_policy) to build its ScreeningEngine.
+export async function updatePolicy(quarantineBelow: number, tagBelow: number, enabledDetectors: DetectorName[]) {
+  const tenantId = await getTenantId();
+  await prisma.tenantPolicy.upsert({
+    where: { tenantId },
+    create: { tenantId, quarantineBelow, tagBelow, enabledDetectors: JSON.stringify(enabledDetectors) },
+    update: { quarantineBelow, tagBelow, enabledDetectors: JSON.stringify(enabledDetectors) },
   });
   revalidatePath("/settings");
 }

@@ -53,6 +53,18 @@ model ApiKey {
   @@index([tenantId])
 }
 
+// Per-tenant tuning of the SDK's TrustPolicy, editable in Settings and fetched
+// by the SDK (thymus.remote.fetch_policy). Scoped down from a full rule-content
+// editor: thresholds + which built-in detectors run, not per-rule regex
+// authoring — that's a larger, separate feature.
+model TenantPolicy {
+  tenantId         String   @id
+  quarantineBelow  Float    @default(0.45)
+  tagBelow         Float    @default(0.70)
+  enabledDetectors String   @default("[\"origin\",\"injection\",\"egress\",\"conflict\",\"rules\"]") // JSON array
+  updatedAt        DateTime @updatedAt
+}
+
 model Decision {
   id              String    @id @default(cuid())
   tenantId        String    @default("default") // Clerk org id or user id
