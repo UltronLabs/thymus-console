@@ -11,6 +11,7 @@ import {
   Rocket,
   KeyRound,
 } from "lucide-react";
+import AccountMenu from "./AccountMenu";
 
 const SECTIONS: { label: string; items: { href: string; label: string; icon: typeof Rocket }[] }[] = [
   {
@@ -37,7 +38,7 @@ const SECTIONS: { label: string; items: { href: string; label: string; icon: typ
 export default function Sidebar() {
   const pathname = usePathname();
   return (
-    <aside className="flex w-60 shrink-0 flex-col border-r border-border bg-sidebar">
+    <aside className="sticky top-0 flex h-screen w-60 shrink-0 flex-col border-r border-border bg-sidebar">
       <div className="flex items-center gap-2.5 border-b border-border px-5 py-4">
         <div className="grid size-8 place-items-center rounded-lg bg-gradient-to-br from-emerald-400 to-teal-600">
           <ShieldCheck className="size-5 text-white" />
@@ -75,11 +76,7 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <div className="border-t border-border p-4 text-[11px] text-muted">
-        <div className="flex items-center gap-1.5">
-          <span className="size-1.5 rounded-full bg-emerald-400" /> single-tenant · dev
-        </div>
-      </div>
+      <AccountMenu />
     </aside>
   );
 }

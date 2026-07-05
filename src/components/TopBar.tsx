@@ -1,5 +1,4 @@
 import { ChevronsUpDown, FolderClosed } from "lucide-react";
-import ThemeToggle from "./ThemeToggle";
 
 export default function TopBar() {
   return (
@@ -10,17 +9,13 @@ export default function TopBar() {
         <ChevronsUpDown className="size-3.5 text-muted" />
       </button>
 
-      <div className="flex items-center gap-3">
-        <a
-          href="https://github.com/UltronLabs/Thymus"
-          target="_blank"
-          className="hidden sm:inline text-xs text-muted hover:text-foreground"
-        >
-          Docs
-        </a>
-        <ThemeToggle />
-        <div className="size-7 rounded-full bg-gradient-to-br from-emerald-400 to-teal-600" />
-      </div>
+      <a
+        href="https://github.com/UltronLabs/Thymus"
+        target="_blank"
+        className="text-xs text-muted hover:text-foreground"
+      >
+        Docs
+      </a>
     </header>
   );
 }
