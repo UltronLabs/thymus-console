@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { DEFAULT_TENANT } from "@/lib/auth";
+import { getTenantId } from "@/lib/tenant";
 import { timeAgo } from "@/lib/format";
 import { PageHeader, StatCard, VerdictBadge } from "@/components/ui";
 import Chart, { type Point } from "@/components/Chart";
@@ -25,8 +25,9 @@ function buildSeries(rows: { createdAt: Date; verdict: string }[]): Point[] {
 }
 
 export default async function Dashboard() {
+  const tenantId = await getTenantId();
   const rows = await prisma.decision.findMany({
-    where: { tenantId: DEFAULT_TENANT },
+    where: { tenantId },
     orderBy: { createdAt: "desc" },
   });
 

@@ -1,12 +1,13 @@
 import { prisma } from "@/lib/prisma";
-import { DEFAULT_TENANT } from "@/lib/auth";
+import { getTenantId } from "@/lib/tenant";
 import { PageHeader } from "@/components/ui";
 import { FileText, FileJson, ExternalLink } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 export default async function Evidence() {
-  const rows = await prisma.decision.findMany({ where: { tenantId: DEFAULT_TENANT } });
+  const tenantId = await getTenantId();
+  const rows = await prisma.decision.findMany({ where: { tenantId } });
   const quarantined = rows.filter((r) => r.verdict === "quarantine").length;
   const reviewed = rows.filter((r) => r.verdict === "quarantine" && !["pending", "none"].includes(r.reviewStatus)).length;
 

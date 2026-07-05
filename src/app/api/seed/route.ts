@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { DEFAULT_TENANT } from "@/lib/auth";
+import { getTenantId } from "@/lib/tenant";
 
 // Demo data mirroring the thymus-bench corpus: poisoning attempts quarantined,
 // benign memories admitted, a couple tagged. Lets the console be explored without
@@ -40,12 +40,13 @@ const TAG: Row[] = [
 ];
 
 export async function POST() {
-  await prisma.decision.deleteMany({ where: { tenantId: DEFAULT_TENANT } });
+  const tenantId = await getTenantId();
+  await prisma.decision.deleteMany({ where: { tenantId } });
 
   const all = [...QUARANTINE, ...ADMIT, ...TAG];
   const now = Date.now();
   const data = all.map((r, i) => ({
-    tenantId: DEFAULT_TENANT,
+    tenantId,
     agentId: r.agentId,
     sessionId: `sess_${(i % 5) + 1}`,
     actorId: `user_${(i % 7) + 1}`,

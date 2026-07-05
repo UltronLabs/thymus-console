@@ -1,7 +1,18 @@
+import { prisma } from "@/lib/prisma";
+import { getTenantId } from "@/lib/tenant";
 import { PageHeader } from "@/components/ui";
+import ApiKeyManager from "@/components/ApiKeyManager";
 
-export default function Settings() {
-  const key = process.env.THYMUS_API_KEY ?? "thymus-dev-key";
+export const dynamic = "force-dynamic";
+
+export default async function Settings() {
+  const tenantId = await getTenantId();
+  const keys = await prisma.apiKey.findMany({
+    where: { tenantId },
+    orderBy: { createdAt: "desc" },
+    select: { id: true, keyPrefix: true, createdAt: true, revokedAt: true },
+  });
+
   return (
     <>
       <PageHeader title="API keys" subtitle="The SDK sends this as the x-api-key header when ingesting decisions." />
@@ -10,11 +21,7 @@ export default function Settings() {
           <div className="text-xs text-muted mb-1">Ingest endpoint</div>
           <code className="font-mono text-sm text-foreground">POST /api/decisions</code>
         </div>
-        <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-          <div className="text-xs text-muted mb-1">API key (dev)</div>
-          <code className="font-mono text-sm text-foreground">{key}</code>
-          <p className="text-xs text-muted mt-2">Set <code className="font-mono">THYMUS_API_KEY</code> in the environment for production. Per-tenant keys are deferred.</p>
-        </div>
+        <ApiKeyManager initialKeys={keys} />
       </div>
     </>
   );

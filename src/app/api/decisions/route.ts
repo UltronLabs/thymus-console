@@ -5,7 +5,7 @@ import { tenantFromRequest, DEFAULT_TENANT } from "@/lib/auth";
 // Ingest decision records from the Thymus SDK's AuditSink. Accepts a single
 // record or an array. Snake_case (SDK) and camelCase both accepted.
 export async function POST(req: NextRequest) {
-  const tenant = tenantFromRequest(req);
+  const tenant = await tenantFromRequest(req);
   if (!tenant) return Response.json({ error: "unauthorized" }, { status: 401 });
 
   const body = await req.json();
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
 
 // List recent decisions (for API consumers; the UI reads Prisma directly).
 export async function GET(req: NextRequest) {
-  const tenant = tenantFromRequest(req);
+  const tenant = await tenantFromRequest(req);
   if (!tenant) return Response.json({ error: "unauthorized" }, { status: 401 });
   const rows = await prisma.decision.findMany({
     where: { tenantId: tenant ?? DEFAULT_TENANT },

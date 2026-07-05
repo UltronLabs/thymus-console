@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { DEFAULT_TENANT } from "@/lib/auth";
+import { getTenantId } from "@/lib/tenant";
 import { parseFlags, timeAgo } from "@/lib/format";
 import { PageHeader, Flags } from "@/components/ui";
 import ReviewButtons from "@/components/ReviewButtons";
@@ -7,12 +7,13 @@ import ReviewButtons from "@/components/ReviewButtons";
 export const dynamic = "force-dynamic";
 
 export default async function Quarantine() {
+  const tenantId = await getTenantId();
   const pending = await prisma.decision.findMany({
-    where: { tenantId: DEFAULT_TENANT, verdict: "quarantine", reviewStatus: "pending" },
+    where: { tenantId, verdict: "quarantine", reviewStatus: "pending" },
     orderBy: { createdAt: "desc" },
   });
   const resolved = await prisma.decision.findMany({
-    where: { tenantId: DEFAULT_TENANT, verdict: "quarantine", reviewStatus: { in: ["released", "deleted", "marked_safe"] } },
+    where: { tenantId, verdict: "quarantine", reviewStatus: { in: ["released", "deleted", "marked_safe"] } },
     orderBy: { reviewedAt: "desc" },
     take: 10,
   });

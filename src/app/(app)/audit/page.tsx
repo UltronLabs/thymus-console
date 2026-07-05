@@ -1,13 +1,14 @@
 import { prisma } from "@/lib/prisma";
-import { DEFAULT_TENANT } from "@/lib/auth";
+import { getTenantId } from "@/lib/tenant";
 import { parseFlags, timeAgo } from "@/lib/format";
 import { PageHeader, VerdictBadge, Flags } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
 export default async function Audit() {
+  const tenantId = await getTenantId();
   const rows = await prisma.decision.findMany({
-    where: { tenantId: DEFAULT_TENANT },
+    where: { tenantId },
     orderBy: { createdAt: "desc" },
     take: 200,
   });

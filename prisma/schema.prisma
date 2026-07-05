@@ -1,6 +1,9 @@
-// Thymus console — decision store.
-// One row per screened memory (the SDK's AuditSink record). Quarantined rows
-// (verdict = "quarantine") form the review queue via reviewStatus.
+// Thymus console — decision store + tenancy.
+//
+// Tenancy model: `tenantId` is a Clerk org id ("org_...") when the acting user
+// has an active organization, or a Clerk user id ("user_...") for a personal
+// account. Both shapes are opaque strings from Clerk — no separate Tenant
+// table needed; User/ApiKey/Decision all key off the same string.
 
 generator client {
   provider = "prisma-client"
@@ -11,9 +14,48 @@ datasource db {
   provider = "sqlite"
 }
 
+// Synced from Clerk via webhook (user.created / user.updated / user.deleted).
+// Not used for auth (Clerk remains the source of truth) — this is a local
+// mirror for joins, display, and anything we want to query without calling
+// the Clerk Backend API on every request.
+model User {
+  id        String   @id // Clerk user id ("user_...")
+  email     String?
+  firstName String?
+  lastName  String?
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Synced from Clerk via webhook (organization.created / .updated / .deleted).
+model Organization {
+  id        String   @id // Clerk org id ("org_...")
+  name      String
+  slug      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Per-tenant ingest key for the SDK's HttpAuditSink (replaces the single
+// global THYMUS_API_KEY). One active key per tenant is typical; history is
+// kept (revoked, not deleted) for audit continuity.
+model ApiKey {
+  id         String    @id @default(cuid())
+  tenantId   String // org id or personal user id
+  // Store only a hash; the raw key is shown once at creation time.
+  keyHash    String    @unique
+  keyPrefix  String // first chars shown in the UI, e.g. "thym_ab12"
+  createdAt  DateTime  @default(now())
+  createdBy  String? // Clerk user id of whoever generated it
+  revokedAt  DateTime?
+
+  @@index([tenantId])
+}
+
 model Decision {
   id              String    @id @default(cuid())
-  tenantId        String    @default("default") // = the API key's tenant
+  tenantId        String    @default("default") // Clerk org id or user id
 
   agentId         String?
   sessionId       String?

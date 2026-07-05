@@ -1,12 +1,14 @@
 import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { DEFAULT_TENANT } from "@/lib/auth";
+import { getTenantId } from "@/lib/tenant";
 import { parseFlags } from "@/lib/format";
 
 // ASI06 / EU AI Act Article-12 evidence pack. Every claim traces to specific
 // decision record ids. HTML by default; ?format=json for the raw evidence.
+// Session-authenticated (this page is reached by browser navigation, not the
+// SDK), so it's scoped to the signed-in user's tenant like every other page.
 export async function GET(req: NextRequest) {
-  const tenant = DEFAULT_TENANT;
+  const tenant = await getTenantId();
   const rows = await prisma.decision.findMany({
     where: { tenantId: tenant },
     orderBy: { createdAt: "asc" },
