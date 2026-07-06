@@ -38,6 +38,18 @@ export async function createApiKey(): Promise<string> {
   return raw;
 }
 
+// Deletes every decision for the caller's tenant (no reseed). Used to reset a
+// demo tenant to empty or clear accumulated test data. Tenant-scoped, so it can
+// never touch another tenant's records.
+export async function clearDecisions() {
+  const tenantId = await getTenantId();
+  const { count } = await prisma.decision.deleteMany({ where: { tenantId } });
+  revalidatePath("/");
+  revalidatePath("/quarantine");
+  revalidatePath("/audit");
+  return count;
+}
+
 export async function revokeApiKey(id: string) {
   const tenantId = await getTenantId();
   await prisma.apiKey.updateMany({
