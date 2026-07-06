@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { savePolicyKnobs, publishPolicyVersion, rollbackPolicy, type PolicyKnobsInput } from "@/app/actions";
 import { ALL_DETECTORS, type CompiledPolicy, type DetectorName } from "@/lib/policy";
 import { BUILTIN_RULES } from "@/lib/builtinRules";
@@ -62,19 +63,22 @@ export default function PolicyManager({
   const saveDraft = () =>
     start(async () => {
       await savePolicyKnobs(knobs);
+      toast.success("Draft saved — publish to push it to SDKs");
       router.refresh();
     });
 
   const publish = () =>
     start(async () => {
-      await publishPolicyVersion(note);
+      const v = await publishPolicyVersion(note);
       setNote("");
+      toast.success(`Published v${v} — SDKs pick it up on their next policy fetch`);
       router.refresh();
     });
 
   const rollback = (v: number) =>
     start(async () => {
-      await rollbackPolicy(v);
+      const nv = await rollbackPolicy(v);
+      toast.success(`Rolled back to v${v} — republished as v${nv}`);
       router.refresh();
     });
 
@@ -133,6 +137,11 @@ export default function PolicyManager({
           <UploadCloud className="size-3.5" /> Publish
         </button>
       </div>
+
+      {/* Two columns on wide screens: the editor left, live feedback (tester +
+          version history) sticky on the right so it's visible while editing. */}
+      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
+      <div className="min-w-0 space-y-4">
 
       {/* Thresholds + trust knobs */}
       <div className="rounded-xl border border-border bg-card p-5 shadow-sm space-y-5">
@@ -228,6 +237,10 @@ export default function PolicyManager({
       {/* Custom rules */}
       <CustomRules rules={initial.customRules} onChanged={() => router.refresh()} />
 
+      </div>{/* /left column */}
+
+      <div className="min-w-0 space-y-4 lg:sticky lg:top-6">
+
       {/* Tester */}
       <RuleTester rules={testerRules} knobs={{ quarantineBelow, tagBelow, baseTrust, floorSeverity }} />
 
@@ -260,6 +273,9 @@ export default function PolicyManager({
           </div>
         ))}
       </div>
+
+      </div>{/* /right column */}
+      </div>{/* /grid */}
     </div>
   );
 }

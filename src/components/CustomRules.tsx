@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { toast } from "sonner";
 import { upsertCustomRule, deleteCustomRule, type CustomRuleInput } from "@/app/actions";
 import { SEVERITIES, type Severity } from "@/lib/ruleMatch";
 import type { CustomRuleSpec } from "@/lib/policy";
@@ -29,12 +30,14 @@ export default function CustomRules({ rules, onChanged }: { rules: CustomRuleSpe
     start(async () => {
       await upsertCustomRule(draft as CustomRuleInput);
       setEditing(null);
+      toast.success(`Rule saved to draft — publish to make it live`);
       onChanged();
     });
 
   const remove = (ruleId: string) =>
     start(async () => {
       await deleteCustomRule(ruleId);
+      toast.success(`Rule ${ruleId} removed from draft`);
       onChanged();
     });
 

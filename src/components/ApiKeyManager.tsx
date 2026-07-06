@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { toast } from "sonner";
 import { createApiKey, revokeApiKey } from "@/app/actions";
 import { Check, Copy, KeyRound, Trash2 } from "lucide-react";
 
@@ -52,6 +53,7 @@ export default function ApiKeyManager({ initialKeys }: { initialKeys: Key[] }) {
                   { id: crypto.randomUUID(), keyPrefix: raw.slice(0, 12), createdAt: new Date(), revokedAt: null },
                   ...k,
                 ]);
+                toast.success("API key created — copy it now, it won't be shown again");
               })
             }
             className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-400 disabled:opacity-50"
@@ -73,7 +75,13 @@ export default function ApiKeyManager({ initialKeys }: { initialKeys: Key[] }) {
                   </div>
                 </div>
                 <button
-                  onClick={() => start(() => revokeApiKey(k.id).then(() => setKeys((prev) => prev.filter((x) => x.id !== k.id))))}
+                  onClick={() =>
+                    start(async () => {
+                      await revokeApiKey(k.id);
+                      setKeys((prev) => prev.filter((x) => x.id !== k.id));
+                      toast.success(`Key ${k.keyPrefix}… revoked`);
+                    })
+                  }
                   className="inline-flex items-center gap-1.5 rounded-lg border border-rose-500/40 px-2.5 py-1.5 text-xs text-rose-700 dark:text-rose-300 hover:bg-rose-500/10"
                 >
                   <Trash2 className="size-3.5" /> Revoke

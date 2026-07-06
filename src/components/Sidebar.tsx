@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   Rocket,
   KeyRound,
+  SlidersHorizontal,
 } from "lucide-react";
 import AccountMenu from "./AccountMenu";
 
@@ -19,6 +20,7 @@ const SECTIONS: { label: string; items: { href: string; label: string; icon: typ
     items: [
       { href: "/get-started", label: "Get started", icon: Rocket },
       { href: "/settings", label: "API keys", icon: KeyRound },
+      { href: "/policy", label: "Trust policy", icon: SlidersHorizontal },
     ],
   },
   {

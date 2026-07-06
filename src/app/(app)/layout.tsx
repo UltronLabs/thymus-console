@@ -1,5 +1,6 @@
 import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
+import { Toaster } from "sonner";
 
 // Chrome for the authenticated app. Route protection is enforced by src/proxy.ts
 // (Clerk middleware); this layout just provides the shell.
@@ -11,6 +12,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <TopBar />
         <main className="flex-1 min-w-0">{children}</main>
       </div>
+      <Toaster position="bottom-right" richColors closeButton />
     </div>
   );
 }
