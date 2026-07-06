@@ -1,16 +1,16 @@
 import type { NextRequest } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { tenantFromRequest } from "@/lib/auth";
-import { DEFAULT_POLICY, parsePolicyRow } from "@/lib/policy";
+import { getActiveSnapshot } from "@/lib/policyStore";
 
-// The SDK fetches this at startup (thymus.remote.fetch_policy) to build a
-// ScreeningEngine reflecting whatever a tenant tuned in Settings: quarantine/
-// tag thresholds and which built-in detectors run. x-api-key authenticated,
-// same as ingest. A tenant with no saved policy gets thymus's own defaults.
+// The SDK fetches this at startup (thymus.remote.fetch_policy / remote_engine)
+// to build a ScreeningEngine reflecting the tenant's *published* policy:
+// thresholds, per-tier base trust, floor severity, which detectors run, which
+// built-in rules are off, and any custom rules. x-api-key authenticated, same as
+// ingest. Draft edits in Settings do NOT appear here until the tenant publishes;
+// a tenant that never published gets thymus's own defaults.
 export async function GET(req: NextRequest) {
   const tenant = await tenantFromRequest(req);
   if (!tenant) return Response.json({ error: "unauthorized" }, { status: 401 });
 
-  const row = await prisma.tenantPolicy.findUnique({ where: { tenantId: tenant } });
-  return Response.json(row ? parsePolicyRow(row) : DEFAULT_POLICY);
+  return Response.json(await getActiveSnapshot(tenant));
 }

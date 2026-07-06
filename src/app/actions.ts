@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { getTenantId } from "@/lib/tenant";
 import { generateApiKey } from "@/lib/apikey";
 import type { DetectorName } from "@/lib/policy";
+import type { Severity, Tier } from "@/lib/ruleMatch";
+import { publish as publishPolicy, rollbackTo } from "@/lib/policyStore";
 import { revalidatePath } from "next/cache";
 
 export type ReviewOutcome = "released" | "deleted" | "marked_safe";
@@ -45,14 +47,88 @@ export async function revokeApiKey(id: string) {
   revalidatePath("/settings");
 }
 
-// Saves per-tenant policy tuning. The SDK fetches this via GET /api/policy
-// (thymus.remote.fetch_policy) to build its ScreeningEngine.
-export async function updatePolicy(quarantineBelow: number, tagBelow: number, enabledDetectors: DetectorName[]) {
+// ---- Policy editing (working draft — not live until published) --------------
+
+export type PolicyKnobsInput = {
+  quarantineBelow: number;
+  tagBelow: number;
+  enabledDetectors: DetectorName[];
+  baseTrust: Record<Tier, number>;
+  floorSeverity: Severity;
+  disabledRuleIds: string[];
+};
+
+// Saves the scalar policy knobs to the working draft. Call publishPolicyVersion()
+// to push the draft to SDKs.
+export async function savePolicyKnobs(input: PolicyKnobsInput) {
   const tenantId = await getTenantId();
-  await prisma.tenantPolicy.upsert({
-    where: { tenantId },
-    create: { tenantId, quarantineBelow, tagBelow, enabledDetectors: JSON.stringify(enabledDetectors) },
-    update: { quarantineBelow, tagBelow, enabledDetectors: JSON.stringify(enabledDetectors) },
+  const data = {
+    quarantineBelow: input.quarantineBelow,
+    tagBelow: input.tagBelow,
+    enabledDetectors: JSON.stringify(input.enabledDetectors),
+    baseTrust: JSON.stringify(input.baseTrust),
+    floorSeverity: input.floorSeverity,
+    disabledRuleIds: JSON.stringify(input.disabledRuleIds),
+  };
+  await prisma.tenantPolicy.upsert({ where: { tenantId }, create: { tenantId, ...data }, update: data });
+  revalidatePath("/settings");
+}
+
+export type CustomRuleInput = {
+  ruleId: string;
+  description: string;
+  severity: Severity;
+  trustDelta: number;
+  flags: string[];
+  allOf: string[][];
+  tags: string[];
+  enabled: boolean;
+};
+
+export async function upsertCustomRule(input: CustomRuleInput) {
+  const tenantId = await getTenantId();
+  const { userId } = await auth();
+  const slug = input.ruleId.trim();
+  if (!slug) throw new Error("rule id is required");
+  // Keep custom ids namespaced so they can never collide with a built-in id.
+  const ruleId = slug.startsWith("custom.") ? slug : `custom.${slug}`;
+  const data = {
+    description: input.description,
+    severity: input.severity,
+    trustDelta: input.trustDelta,
+    flags: JSON.stringify(input.flags),
+    allOf: JSON.stringify(input.allOf.filter((g) => g.length)),
+    tags: JSON.stringify(input.tags),
+    enabled: input.enabled,
+  };
+  await prisma.customRule.upsert({
+    where: { tenantId_ruleId: { tenantId, ruleId } },
+    create: { tenantId, ruleId, createdBy: userId, ...data },
+    update: data,
   });
   revalidatePath("/settings");
+}
+
+export async function deleteCustomRule(ruleId: string) {
+  const tenantId = await getTenantId();
+  await prisma.customRule.deleteMany({ where: { tenantId, ruleId } });
+  revalidatePath("/settings");
+}
+
+// Freezes the current draft into a new immutable version and makes it live.
+export async function publishPolicyVersion(note = "") {
+  const tenantId = await getTenantId();
+  const { userId } = await auth();
+  const version = await publishPolicy(tenantId, userId, note);
+  revalidatePath("/settings");
+  return version;
+}
+
+// Restores an old version into the draft and re-publishes it (append-only).
+export async function rollbackPolicy(targetVersion: number) {
+  const tenantId = await getTenantId();
+  const { userId } = await auth();
+  const version = await rollbackTo(tenantId, targetVersion, userId);
+  revalidatePath("/settings");
+  return version;
 }

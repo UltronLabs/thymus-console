@@ -53,16 +53,65 @@ model ApiKey {
   @@index([tenantId])
 }
 
-// Per-tenant tuning of the SDK's TrustPolicy, editable in Settings and fetched
-// by the SDK (thymus.remote.fetch_policy). Scoped down from a full rule-content
-// editor: thresholds + which built-in detectors run, not per-rule regex
-// authoring — that's a larger, separate feature.
+// Per-tenant tuning of the SDK's TrustPolicy — the *working* (draft) copy that
+// the Settings UI edits. This is NOT what the SDK reads directly: the SDK fetches
+// the active PolicyVersion snapshot (see below), so edits here only reach agents
+// once published. Full editor: thresholds, per-tier base trust, floor severity,
+// which detectors run, which built-in rules are off, and custom rules (see
+// CustomRule).
 model TenantPolicy {
   tenantId         String   @id
   quarantineBelow  Float    @default(0.45)
   tagBelow         Float    @default(0.70)
   enabledDetectors String   @default("[\"origin\",\"injection\",\"egress\",\"conflict\",\"rules\"]") // JSON array
+  // Per-tier starting trust before detectors run; JSON {trusted,standard,untrusted,hostile}.
+  baseTrust        String   @default("{\"trusted\":0.95,\"standard\":0.8,\"untrusted\":0.5,\"hostile\":0.2}")
+  // Min severity that forces at least a TAG from an attacker-reachable origin.
+  floorSeverity    String   @default("high") // none | low | medium | high | critical
+  // Built-in rule ids the tenant has switched off; JSON array of strings.
+  disabledRuleIds  String   @default("[]")
+  // Which PolicyVersion the SDK currently serves (null = nothing published yet).
+  activeVersion    Int?
   updatedAt        DateTime @updatedAt
+}
+
+// A tenant-authored detection rule (co-occurrence of term groups), mirroring the
+// SDK's rule-pack format so remote_engine can build a RuleDetector from it. Lives
+// in the working set; a snapshot is frozen into each PolicyVersion on publish.
+model CustomRule {
+  id          String   @id @default(cuid())
+  tenantId    String
+  ruleId      String // stable slug, e.g. "custom.refund_override"
+  description String   @default("")
+  severity    String   @default("medium") // none | low | medium | high | critical
+  trustDelta  Float    @default(-0.4)
+  flags       String   @default("[]") // JSON array of flag strings
+  allOf       String   @default("[]") // JSON array of groups; each group a JSON array of patterns
+  tags        String   @default("[]") // JSON array
+  enabled     Boolean  @default(true)
+  createdBy   String? // Clerk user id
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([tenantId, ruleId])
+  @@index([tenantId])
+}
+
+// An immutable, published snapshot of a tenant's entire compiled policy (the same
+// JSON shape GET /api/policy returns). Append-only history: publishing creates a
+// new row + points TenantPolicy.activeVersion at it; rollback re-publishes an old
+// snapshot as a new version, so history is never rewritten.
+model PolicyVersion {
+  id        String   @id @default(cuid())
+  tenantId  String
+  version   Int // per-tenant incrementing number
+  snapshot  String // JSON: the full CompiledPolicy served to SDKs
+  note      String   @default("")
+  createdBy String? // Clerk user id
+  createdAt DateTime @default(now())
+
+  @@unique([tenantId, version])
+  @@index([tenantId, version])
 }
 
 model Decision {
