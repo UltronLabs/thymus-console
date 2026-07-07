@@ -49,25 +49,39 @@ In the Clerk dashboard, on the **production** instance:
 
 ## Console env (this repo)
 
-Names already used in `.env` — set the **production** values on Railway:
+Names already used in `.env` — set the **production** values on Railway. You have two options for auth URLs:
+
+**Option A: Dedicated Clerk Account Portal (cleaner, recommended)**
+Use `accounts.getthymus.com` as the dedicated auth subdomain (already set in Clerk dashboard):
 
 ```bash
 # Production Clerk keys (from the prod instance, NOT the dev pk_test_/sk_test_)
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_live_...
 CLERK_SECRET_KEY=sk_live_...
 
-# Auth routes live on the console; absolute URLs so a bounce from anywhere
-# (including capsule) lands on the right page, not a dev URL.
-NEXT_PUBLIC_CLERK_SIGN_IN_URL=https://console.getthymus.com/sign-in
-NEXT_PUBLIC_CLERK_SIGN_UP_URL=https://console.getthymus.com/sign-up
+# Auth routes on the dedicated Clerk Account Portal subdomain.
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=https://accounts.getthymus.com/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=https://accounts.getthymus.com/sign-up
 
-# Where Clerk drops the user after auth → the dashboard.
+# Where Clerk drops the user after auth → the console dashboard.
 NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=https://console.getthymus.com/
 NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=https://console.getthymus.com/
 
 # Webhook signing secret (set once the public URL exists; see clerk-webhooks).
 CLERK_WEBHOOK_SIGNING_SECRET=whsec_...
 ```
+
+**Option B: Inline on console subdomain (alternative)**
+If you prefer to keep auth on the same domain as the app, use `console.getthymus.com`:
+
+```bash
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=https://console.getthymus.com/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=https://console.getthymus.com/sign-up
+NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=https://console.getthymus.com/
+NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=https://console.getthymus.com/
+```
+
+**Recommendation:** Use **Option A** (`accounts.getthymus.com`). It's already configured in Clerk, cleanly separates auth concerns from the app, and is the standard SaaS topology.
 
 ## Two versions — start Simple
 
