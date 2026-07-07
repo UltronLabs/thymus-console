@@ -60,7 +60,7 @@ export default function LiveQuarantine({
                   <div className="min-w-0">
                     <p className="text-sm text-foreground">&ldquo;{r.text}&rdquo;</p>
                     <p className="text-xs text-muted mt-1">
-                      {r.agentId} · {r.channel} · origin <span className="text-foreground/80">{r.originTrustTier}</span> · {timeAgo(r.createdAt)}
+                      {r.agentId} · {r.channel} · origin <span className="text-foreground/80">{r.originTrustTier}</span> · {timeAgo(new Date(r.createdAt))}
                     </p>
                   </div>
                   <ReviewButtons id={r.id} />
@@ -82,7 +82,7 @@ export default function LiveQuarantine({
                 <li key={r.id} className="flex items-center gap-4 px-5 py-3">
                   <span className="text-xs font-medium text-foreground/80 w-24 capitalize">{r.reviewStatus.replace("_", " ")}</span>
                   <span className="flex-1 min-w-0 truncate text-sm text-muted">{r.text}</span>
-                  <span className="text-xs text-muted/70">{r.reviewedAt ? timeAgo(r.reviewedAt) : ""}</span>
+                  <span className="text-xs text-muted/70">{r.reviewedAt ? timeAgo(new Date(r.reviewedAt)) : ""}</span>
                 </li>
               ))}
             </ul>

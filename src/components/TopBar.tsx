@@ -15,7 +15,6 @@ export default function TopBar() {
         afterSelectOrganizationUrl="/"
         afterSelectPersonalUrl="/"
         appearance={{
-          baseTheme: resolvedTheme === "dark" ? dark : undefined,
           elements: {
             rootBox: "flex items-center",
             organizationSwitcherTrigger:

@@ -41,7 +41,7 @@ export default async function Audit() {
                   <td className="px-4 py-3 align-top text-xs text-muted">{r.originTrustTier}</td>
                   <td className="px-4 py-3 align-top"><Flags flags={parseFlags(r.taintFlags)} max={2} /></td>
                   <td className="px-4 py-3 align-top text-xs text-muted tabular-nums">{r.trustScore.toFixed(2)}</td>
-                  <td className="px-4 py-3 align-top text-right text-xs text-muted/70 whitespace-nowrap">{timeAgo(r.createdAt)}</td>
+                  <td className="px-4 py-3 align-top text-right text-xs text-muted/70 whitespace-nowrap">{timeAgo(new Date(r.createdAt))}</td>
                 </tr>
               ))}
             </tbody>

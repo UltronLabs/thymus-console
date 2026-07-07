@@ -11,7 +11,6 @@ export default function SignUpPage() {
     <AuthShell>
       <SignUp
         appearance={{
-          baseTheme: resolvedTheme === "dark" ? dark : undefined,
           elements: { rootBox: "w-full flex justify-center", card: "shadow-none" },
         }}
       />
