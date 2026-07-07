@@ -42,6 +42,13 @@ export const POST = withErrorHandling(async (req: Request) => {
     ids.push(created.id);
   }
 
+  // SCALE-LATER: this writes straight to Postgres inside the request. That's the
+  // right call at launch volume, but it's the synchronous-ingest model — a large
+  // burst hits the DB directly. When ingest volume warrants it, follow the
+  // Sentry pattern: put a queue (Upstash/Redis, or a Postgres buffer table)
+  // between this endpoint and the write, and drain it with a background worker.
+  // The SDK contract (returned ids for the blocking round-trip) still holds if
+  // the queue assigns ids up front. Don't build this before the volume is real.
   return Response.json({ ok: true, count: ids.length, ids });
 });
 
