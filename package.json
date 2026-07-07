@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "node scripts/set-db-provider.mjs && next dev",
     "build": "node scripts/set-db-provider.mjs && prisma generate && next build",
-    "start": "node scripts/set-db-provider.mjs && prisma db push --skip-generate && next start",
+    "start": "node scripts/set-db-provider.mjs && prisma db push && next start",
     "db:push": "node scripts/set-db-provider.mjs && prisma db push",
     "lint": "eslint",
     "smoke": "node scripts/smoke.mjs"
