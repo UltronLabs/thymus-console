@@ -12,7 +12,7 @@ import { Inbox, Radio } from "lucide-react";
 export type RangeKey = "24h" | "7d" | "30d";
 export type Counts = { total: number; quarantine: number; tag: number; admit: number };
 
-type Row = { id: string; text: string | null; channel: string; verdict: string; createdAt: string; taintFlags: string };
+type Row = { id: string; text: string | null; channel: string; verdict: string; createdAt: string; taintFlags: string[] };
 
 const RANGES: { key: RangeKey; label: string }[] = [
   { key: "24h", label: "24h" },

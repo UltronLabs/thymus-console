@@ -28,13 +28,12 @@ function num01(v: unknown): number {
   return Math.max(0, Math.min(1, n));
 }
 
-function flags(v: unknown): string {
+function flags(v: unknown): string[] {
   const arr = Array.isArray(v) ? v : [];
-  const clean = arr
+  return arr
     .filter((f) => typeof f === "string")
     .slice(0, MAX_FLAGS)
     .map((f) => (f as string).slice(0, MAX_FLAG_LEN));
-  return JSON.stringify(clean);
 }
 
 export type NormalizedDecision = {
@@ -48,7 +47,7 @@ export type NormalizedDecision = {
   verdict: string;
   trustScore: number;
   severity: string;
-  taintFlags: string;
+  taintFlags: string[];
   reason: string | null;
   decidingPolicy: string | null;
   reviewStatus: string;

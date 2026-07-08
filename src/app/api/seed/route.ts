@@ -56,7 +56,7 @@ export async function POST() {
     verdict: r.verdict,
     trustScore: r.trust,
     severity: r.severity,
-    taintFlags: JSON.stringify(r.flags),
+    taintFlags: r.flags,
     reason: r.reason,
     decidingPolicy: "default@1.0.0",
     reviewStatus: r.verdict === "quarantine" ? "pending" : "none",

@@ -26,11 +26,9 @@ export async function getActiveSnapshot(tenantId: string): Promise<CompiledPolic
     where: { tenantId_version: { tenantId, version: row.activeVersion } },
   });
   if (!ver) return DEFAULT_POLICY;
-  try {
-    return JSON.parse(ver.snapshot) as CompiledPolicy;
-  } catch {
-    return DEFAULT_POLICY;
-  }
+  // snapshot is a native Json column — Prisma already hands back the parsed
+  // object (and Postgres guarantees it's valid JSON; no parse to fail here).
+  return ver.snapshot as CompiledPolicy;
 }
 
 // Ignore the `version` field when comparing draft vs published — it's metadata,
@@ -54,7 +52,7 @@ export async function publish(tenantId: string, createdBy: string | null, note =
     select: { version: true },
   });
   const version = (last?.version ?? 0) + 1;
-  const snapshot = JSON.stringify({ ...working, version });
+  const snapshot = { ...working, version };
 
   await prisma.policyVersion.create({ data: { tenantId, version, snapshot, note, createdBy } });
   await prisma.tenantPolicy.upsert({
@@ -72,7 +70,7 @@ export async function rollbackTo(tenantId: string, targetVersion: number, create
     where: { tenantId_version: { tenantId, version: targetVersion } },
   });
   if (!ver) throw new Error(`version ${targetVersion} not found`);
-  const snap = JSON.parse(ver.snapshot) as CompiledPolicy;
+  const snap = ver.snapshot as CompiledPolicy;
 
   // Overwrite working scalar policy.
   await prisma.tenantPolicy.upsert({
@@ -81,18 +79,18 @@ export async function rollbackTo(tenantId: string, targetVersion: number, create
       tenantId,
       quarantineBelow: snap.quarantineBelow,
       tagBelow: snap.tagBelow,
-      enabledDetectors: JSON.stringify(snap.enabledDetectors),
-      baseTrust: JSON.stringify(snap.baseTrust),
+      enabledDetectors: snap.enabledDetectors,
+      baseTrust: snap.baseTrust,
       floorSeverity: snap.floorSeverity,
-      disabledRuleIds: JSON.stringify(snap.disabledRuleIds),
+      disabledRuleIds: snap.disabledRuleIds,
     },
     update: {
       quarantineBelow: snap.quarantineBelow,
       tagBelow: snap.tagBelow,
-      enabledDetectors: JSON.stringify(snap.enabledDetectors),
-      baseTrust: JSON.stringify(snap.baseTrust),
+      enabledDetectors: snap.enabledDetectors,
+      baseTrust: snap.baseTrust,
       floorSeverity: snap.floorSeverity,
-      disabledRuleIds: JSON.stringify(snap.disabledRuleIds),
+      disabledRuleIds: snap.disabledRuleIds,
     },
   });
 
@@ -106,9 +104,9 @@ export async function rollbackTo(tenantId: string, targetVersion: number, create
         description: r.description,
         severity: r.severity,
         trustDelta: r.trustDelta,
-        flags: JSON.stringify(r.flags),
-        allOf: JSON.stringify(r.allOf),
-        tags: JSON.stringify(r.tags),
+        flags: r.flags,
+        allOf: r.allOf,
+        tags: r.tags,
         enabled: r.enabled,
         createdBy,
       })),

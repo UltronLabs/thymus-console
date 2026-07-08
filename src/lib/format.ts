@@ -29,13 +29,12 @@ export function verdictStyle(v: string) {
   );
 }
 
-export function parseFlags(json: string): string[] {
-  try {
-    const v = JSON.parse(json);
-    return Array.isArray(v) ? v : [];
-  } catch {
-    return [];
-  }
+// taintFlags is a native Json column now — Prisma hands back a real array, not
+// a string to parse. Kept as a defensive coercion (not a bare cast) since the
+// value is `unknown` at the type level and callers pass it straight through
+// from the DB/SSE without validating shape themselves.
+export function parseFlags(v: unknown): string[] {
+  return Array.isArray(v) ? v.filter((f): f is string => typeof f === "string") : [];
 }
 
 export function timeAgo(d: Date): string {

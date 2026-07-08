@@ -51,13 +51,11 @@ export const DEFAULT_POLICY: CompiledPolicy = {
   version: null,
 };
 
-function jsonOr<T>(raw: string | null | undefined, fallback: T): T {
-  if (!raw) return fallback;
-  try {
-    return JSON.parse(raw) as T;
-  } catch {
-    return fallback;
-  }
+// These fields are native Json columns — Prisma already hands back a parsed
+// value, not a string to JSON.parse. Still defensive (unknown at the type
+// level, and a fresh TenantPolicy/CustomRule row can be null/absent).
+function jsonOr<T>(v: unknown, fallback: T): T {
+  return v === null || v === undefined ? fallback : (v as T);
 }
 
 function asSeverity(v: unknown): Severity {
@@ -76,10 +74,10 @@ export function compileWorking(
   row: {
     quarantineBelow: number;
     tagBelow: number;
-    enabledDetectors: string;
-    baseTrust: string;
+    enabledDetectors: unknown;
+    baseTrust: unknown;
     floorSeverity: string;
-    disabledRuleIds: string;
+    disabledRuleIds: unknown;
     activeVersion: number | null;
   } | null,
   rules: {
@@ -87,9 +85,9 @@ export function compileWorking(
     description: string;
     severity: string;
     trustDelta: number;
-    flags: string;
-    allOf: string;
-    tags: string;
+    flags: unknown;
+    allOf: unknown;
+    tags: unknown;
     enabled: boolean;
   }[],
 ): CompiledPolicy {
@@ -111,9 +109,9 @@ function mapRule(r: {
   description: string;
   severity: string;
   trustDelta: number;
-  flags: string;
-  allOf: string;
-  tags: string;
+  flags: unknown;
+  allOf: unknown;
+  tags: unknown;
   enabled: boolean;
 }): CustomRuleSpec {
   return {

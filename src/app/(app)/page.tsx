@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getTenantId } from "@/lib/tenant";
+import { parseFlags } from "@/lib/format";
 import LiveDashboard, { type Counts, type RangeKey } from "@/components/LiveDashboard";
 
 export const dynamic = "force-dynamic";
@@ -38,7 +39,11 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
     }),
   ]);
 
-  const initialRows = rows.map((r) => ({ ...r, createdAt: r.createdAt.toISOString() }));
+  const initialRows = rows.map((r) => ({
+    ...r,
+    createdAt: r.createdAt.toISOString(),
+    taintFlags: parseFlags(r.taintFlags),
+  }));
 
   return <LiveDashboard initialRows={initialRows} prev={countsOf(prevRows)} range={range} />;
 }

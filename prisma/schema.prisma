@@ -63,13 +63,13 @@ model TenantPolicy {
   tenantId         String   @id
   quarantineBelow  Float    @default(0.45)
   tagBelow         Float    @default(0.70)
-  enabledDetectors String   @default("[\"origin\",\"injection\",\"egress\",\"conflict\",\"rules\"]") // JSON array
+  enabledDetectors Json     @default("[\"origin\",\"injection\",\"egress\",\"conflict\",\"rules\"]") // JSON array
   // Per-tier starting trust before detectors run; JSON {trusted,standard,untrusted,hostile}.
-  baseTrust        String   @default("{\"trusted\":0.95,\"standard\":0.8,\"untrusted\":0.5,\"hostile\":0.2}")
+  baseTrust        Json     @default("{\"trusted\":0.95,\"standard\":0.8,\"untrusted\":0.5,\"hostile\":0.2}")
   // Min severity that forces at least a TAG from an attacker-reachable origin.
   floorSeverity    String   @default("high") // none | low | medium | high | critical
   // Built-in rule ids the tenant has switched off; JSON array of strings.
-  disabledRuleIds  String   @default("[]")
+  disabledRuleIds  Json     @default("[]")
   // Which PolicyVersion the SDK currently serves (null = nothing published yet).
   activeVersion    Int?
   updatedAt        DateTime @updatedAt
@@ -85,9 +85,9 @@ model CustomRule {
   description String   @default("")
   severity    String   @default("medium") // none | low | medium | high | critical
   trustDelta  Float    @default(-0.4)
-  flags       String   @default("[]") // JSON array of flag strings
-  allOf       String   @default("[]") // JSON array of groups; each group a JSON array of patterns
-  tags        String   @default("[]") // JSON array
+  flags       Json     @default("[]") // JSON array of flag strings
+  allOf       Json     @default("[]") // JSON array of groups; each group a JSON array of patterns
+  tags        Json     @default("[]") // JSON array
   enabled     Boolean  @default(true)
   createdBy   String? // Clerk user id
   createdAt   DateTime @default(now())
@@ -105,7 +105,7 @@ model PolicyVersion {
   id        String   @id @default(cuid())
   tenantId  String
   version   Int // per-tenant incrementing number
-  snapshot  String // JSON: the full CompiledPolicy served to SDKs
+  snapshot  Json // the full CompiledPolicy served to SDKs
   note      String   @default("")
   createdBy String? // Clerk user id
   createdAt DateTime @default(now())
@@ -130,7 +130,7 @@ model Decision {
   verdict         String // admit | tag | quarantine
   trustScore      Float
   severity        String // none | low | medium | high | critical
-  taintFlags      String  @default("[]") // JSON array of flag strings
+  taintFlags      Json    @default("[]") // JSON array of flag strings
   reason          String?
   decidingPolicy  String?
 

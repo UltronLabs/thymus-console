@@ -9,7 +9,7 @@ import { Radio } from "lucide-react";
 
 type PendingRow = {
   id: string; text: string | null; agentId: string | null; channel: string;
-  originTrustTier: string; taintFlags: string; reason: string | null; createdAt: string;
+  originTrustTier: string; taintFlags: string[]; reason: string | null; createdAt: string;
 };
 type ResolvedRow = { id: string; text: string | null; reviewStatus: string; reviewedAt: string | null };
 

@@ -77,10 +77,10 @@ export async function savePolicyKnobs(input: PolicyKnobsInput) {
   const data = {
     quarantineBelow: input.quarantineBelow,
     tagBelow: input.tagBelow,
-    enabledDetectors: JSON.stringify(input.enabledDetectors),
-    baseTrust: JSON.stringify(input.baseTrust),
+    enabledDetectors: input.enabledDetectors,
+    baseTrust: input.baseTrust,
     floorSeverity: input.floorSeverity,
-    disabledRuleIds: JSON.stringify(input.disabledRuleIds),
+    disabledRuleIds: input.disabledRuleIds,
   };
   await prisma.tenantPolicy.upsert({ where: { tenantId }, create: { tenantId, ...data }, update: data });
   revalidatePath("/settings");
@@ -108,9 +108,9 @@ export async function upsertCustomRule(input: CustomRuleInput) {
     description: input.description,
     severity: input.severity,
     trustDelta: input.trustDelta,
-    flags: JSON.stringify(input.flags),
-    allOf: JSON.stringify(input.allOf.filter((g) => g.length)),
-    tags: JSON.stringify(input.tags),
+    flags: input.flags,
+    allOf: input.allOf.filter((g) => g.length),
+    tags: input.tags,
     enabled: input.enabled,
   };
   await prisma.customRule.upsert({

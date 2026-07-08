@@ -106,7 +106,7 @@ try {
   ok(clamped.channel === "unknown", "unknown channel clamped to 'unknown'");
   ok(clamped.trustScore >= 0 && clamped.trustScore <= 1, "out-of-range trustScore clamped to [0,1]");
   ok((clamped.text?.length ?? 0) <= 16000, "oversized text truncated to 16k");
-  ok(clamped.taintFlags === "[]", "non-array taint_flags coerced to []");
+  ok(Array.isArray(clamped.taintFlags) && clamped.taintFlags.length === 0, "non-array taint_flags coerced to []");
 
   // --- 5. policy endpoint isolation + defaults ------------------------------
   const polA = await fetch(`${BASE}/api/policy`, { headers: H("smoke_A") });

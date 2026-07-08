@@ -11,7 +11,7 @@ export type StreamedDecision = {
   verdict: string;
   trustScore: number;
   severity: string;
-  taintFlags: string;
+  taintFlags: string[];
   reason: string | null;
   reviewStatus: string;
   createdAt: string;

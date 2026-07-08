@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getTenantId } from "@/lib/tenant";
+import { parseFlags } from "@/lib/format";
 import LiveQuarantine from "@/components/LiveQuarantine";
 
 export const dynamic = "force-dynamic";
@@ -24,7 +25,7 @@ export default async function Quarantine() {
         agentId: r.agentId,
         channel: r.channel,
         originTrustTier: r.originTrustTier,
-        taintFlags: r.taintFlags,
+        taintFlags: parseFlags(r.taintFlags),
         reason: r.reason,
         createdAt: r.createdAt.toISOString(),
       }))}
