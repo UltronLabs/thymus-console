@@ -13,24 +13,20 @@ The Thymus SDK screens every memory write (provenance + injection + rule detecti
 
 ## Stack
 
-Next.js 16 (App Router) · TypeScript · Tailwind v4 · Prisma 7 · Recharts. Dual-provider DB: SQLite or Postgres locally, Postgres in prod — picked at runtime by `DATABASE_URL` (see `src/lib/prisma.ts`). Same schema either way; no migration files, tables are kept in sync with `prisma db push`.
+Next.js 16 (App Router) · TypeScript · Tailwind v4 · Prisma 7 · Recharts. **Postgres everywhere** — local dev and prod both point `DATABASE_URL` at a real Postgres instance (see `src/lib/prisma.ts`); no SQLite, so local behavior matches prod. No migration files — tables are kept in sync with `prisma db push`.
 
 ## Run locally
 
 ```bash
 npm install
-npm run db:push               # syncs the schema to whatever DATABASE_URL points at
+npm run db:push               # syncs the schema to DATABASE_URL
 npm run dev                   # http://localhost:3000
 # then click "Load demo data", or POST /api/seed
 ```
 
 Set `THYMUS_API_KEY` in `.env` (defaults to `thymus-dev-key`) — the SDK sends it as `x-api-key` when ingesting.
 
-### Local database options
-
-`DATABASE_URL` in `.env` decides the provider — `postgres://...` → Postgres, anything else (e.g. `file:./dev.db`) → SQLite.
-
-**Native Postgres (recommended — matches prod):**
+### Local Postgres setup
 
 ```bash
 brew install postgresql@14
@@ -59,14 +55,6 @@ Password: (none — Homebrew's default local trust auth)
 ```
 
 or as a single connection string: `postgresql://<your-mac-username>@localhost:5433/thymus_console`
-
-**SQLite (quick start, no setup):**
-
-```
-DATABASE_URL="file:./dev.db"
-```
-
-No server to run; `npm run db:push` creates `dev.db` directly. Fine for a quick look, but diverges from prod (Postgres) — prefer native Postgres for anything beyond that.
 
 ## Ingest from the Thymus SDK
 

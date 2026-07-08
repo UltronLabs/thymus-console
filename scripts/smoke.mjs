@@ -8,47 +8,31 @@
 // Vitest/pytest suites. Exit code is nonzero on any failed assertion.
 
 import "dotenv/config";
+import pg from "pg";
 import { createHash, randomBytes } from "node:crypto";
 
 const BASE = process.env.SMOKE_BASE ?? "http://localhost:3000";
 const sha256 = (s) => createHash("sha256").update(s).digest("hex");
 
-// Dual-provider, mirroring src/lib/prisma.ts: SQLite locally, Postgres in prod.
-// The smoke test seeds ApiKey rows directly (bypassing the app) so it can test
-// auth without a signed-in browser session.
-const dbUrl = process.env.DATABASE_URL ?? "file:./dev.db";
-const isPostgres = dbUrl.startsWith("postgres");
+// The smoke test seeds ApiKey rows directly against Postgres (bypassing the
+// app) so it can test auth without a signed-in browser session.
+const dbUrl = process.env.DATABASE_URL;
+if (!dbUrl) throw new Error("DATABASE_URL is not set");
 
-let insertKeyRow, deleteTenantRows, closeDb;
-if (isPostgres) {
-  const { default: pg } = await import("pg");
-  const client = new pg.Client({ connectionString: dbUrl });
-  await client.connect();
-  insertKeyRow = (id, tenantId, keyHash, keyPrefix) =>
-    client.query(
-      'INSERT INTO "ApiKey" (id, "tenantId", "keyHash", "keyPrefix", "createdAt") VALUES ($1, $2, $3, $4, now())',
-      [id, tenantId, keyHash, keyPrefix],
-    );
-  deleteTenantRows = async (t) => {
-    for (const table of ["Decision", "ApiKey", "TenantPolicy", "PolicyVersion", "CustomRule"]) {
-      await client.query(`DELETE FROM "${table}" WHERE "tenantId" = $1`, [t]);
-    }
-  };
-  closeDb = () => client.end();
-} else {
-  const { default: Database } = await import("better-sqlite3");
-  const db = new Database(dbUrl.replace(/^file:/, ""));
-  insertKeyRow = (id, tenantId, keyHash, keyPrefix) =>
-    db
-      .prepare("INSERT INTO ApiKey (id, tenantId, keyHash, keyPrefix, createdAt) VALUES (?, ?, ?, ?, datetime('now'))")
-      .run(id, tenantId, keyHash, keyPrefix);
-  deleteTenantRows = (t) => {
-    for (const table of ["Decision", "ApiKey", "TenantPolicy", "PolicyVersion", "CustomRule"]) {
-      db.prepare(`DELETE FROM ${table} WHERE tenantId = ?`).run(t);
-    }
-  };
-  closeDb = () => db.close();
-}
+const client = new pg.Client({ connectionString: dbUrl });
+await client.connect();
+
+const insertKeyRow = (id, tenantId, keyHash, keyPrefix) =>
+  client.query(
+    'INSERT INTO "ApiKey" (id, "tenantId", "keyHash", "keyPrefix", "createdAt") VALUES ($1, $2, $3, $4, now())',
+    [id, tenantId, keyHash, keyPrefix],
+  );
+const deleteTenantRows = async (t) => {
+  for (const table of ["Decision", "ApiKey", "TenantPolicy", "PolicyVersion", "CustomRule"]) {
+    await client.query(`DELETE FROM "${table}" WHERE "tenantId" = $1`, [t]);
+  }
+};
+const closeDb = () => client.end();
 
 let pass = 0;
 const failures = [];
