@@ -7,12 +7,48 @@
 // Not a unit test — it needs the live server — so it lives in scripts/, not the
 // Vitest/pytest suites. Exit code is nonzero on any failed assertion.
 
-import Database from "better-sqlite3";
+import "dotenv/config";
 import { createHash, randomBytes } from "node:crypto";
 
 const BASE = process.env.SMOKE_BASE ?? "http://localhost:3000";
-const db = new Database("dev.db");
 const sha256 = (s) => createHash("sha256").update(s).digest("hex");
+
+// Dual-provider, mirroring src/lib/prisma.ts: SQLite locally, Postgres in prod.
+// The smoke test seeds ApiKey rows directly (bypassing the app) so it can test
+// auth without a signed-in browser session.
+const dbUrl = process.env.DATABASE_URL ?? "file:./dev.db";
+const isPostgres = dbUrl.startsWith("postgres");
+
+let insertKeyRow, deleteTenantRows, closeDb;
+if (isPostgres) {
+  const { default: pg } = await import("pg");
+  const client = new pg.Client({ connectionString: dbUrl });
+  await client.connect();
+  insertKeyRow = (id, tenantId, keyHash, keyPrefix) =>
+    client.query(
+      'INSERT INTO "ApiKey" (id, "tenantId", "keyHash", "keyPrefix", "createdAt") VALUES ($1, $2, $3, $4, now())',
+      [id, tenantId, keyHash, keyPrefix],
+    );
+  deleteTenantRows = async (t) => {
+    for (const table of ["Decision", "ApiKey", "TenantPolicy", "PolicyVersion", "CustomRule"]) {
+      await client.query(`DELETE FROM "${table}" WHERE "tenantId" = $1`, [t]);
+    }
+  };
+  closeDb = () => client.end();
+} else {
+  const { default: Database } = await import("better-sqlite3");
+  const db = new Database(dbUrl.replace(/^file:/, ""));
+  insertKeyRow = (id, tenantId, keyHash, keyPrefix) =>
+    db
+      .prepare("INSERT INTO ApiKey (id, tenantId, keyHash, keyPrefix, createdAt) VALUES (?, ?, ?, ?, datetime('now'))")
+      .run(id, tenantId, keyHash, keyPrefix);
+  deleteTenantRows = (t) => {
+    for (const table of ["Decision", "ApiKey", "TenantPolicy", "PolicyVersion", "CustomRule"]) {
+      db.prepare(`DELETE FROM ${table} WHERE tenantId = ?`).run(t);
+    }
+  };
+  closeDb = () => db.close();
+}
 
 let pass = 0;
 const failures = [];
@@ -24,23 +60,14 @@ function ok(cond, label) {
 // --- provision throwaway tenants + keys ------------------------------------
 const tenants = ["smoke_A", "smoke_B", "smoke_C"];
 const keys = {};
-const insertKey = db.prepare(
-  "INSERT INTO ApiKey (id, tenantId, keyHash, keyPrefix, createdAt) VALUES (?, ?, ?, ?, datetime('now'))",
-);
-function cleanup() {
-  for (const t of tenants) {
-    db.prepare("DELETE FROM Decision WHERE tenantId = ?").run(t);
-    db.prepare("DELETE FROM ApiKey WHERE tenantId = ?").run(t);
-    db.prepare("DELETE FROM TenantPolicy WHERE tenantId = ?").run(t);
-    db.prepare("DELETE FROM PolicyVersion WHERE tenantId = ?").run(t);
-    db.prepare("DELETE FROM CustomRule WHERE tenantId = ?").run(t);
-  }
+async function cleanup() {
+  for (const t of tenants) await deleteTenantRows(t);
 }
-cleanup(); // in case a prior run aborted
+await cleanup(); // in case a prior run aborted
 for (const t of tenants) {
   const raw = "thym_" + randomBytes(24).toString("base64url");
   keys[t] = raw;
-  insertKey.run(`smokekey_${t}`, t, sha256(raw), raw.slice(0, 12));
+  await insertKeyRow(`smokekey_${t}`, t, sha256(raw), raw.slice(0, 12));
 }
 
 const H = (t) => ({ "content-type": "application/json", "x-api-key": keys[t] });
@@ -111,8 +138,8 @@ try {
   }
   ok(got429, "ingest over 600 records/min -> 429");
 } finally {
-  cleanup();
-  db.close();
+  await cleanup();
+  await closeDb();
 }
 
 console.log(`\n${pass} passed, ${failures.length} failed`);

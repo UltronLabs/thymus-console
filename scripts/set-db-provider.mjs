@@ -10,6 +10,7 @@
 // is done with `prisma db push` (not migration files), which avoids Prisma's
 // per-provider migration lock while we're pre-launch with no production data.
 import { readFileSync, writeFileSync } from "node:fs";
+import "dotenv/config"; // read .env for local dev; no-op in prod (Railway sets DATABASE_URL directly)
 
 const url = process.env.DATABASE_URL ?? "file:./dev.db";
 const provider = url.startsWith("postgres") ? "postgresql" : "sqlite";
